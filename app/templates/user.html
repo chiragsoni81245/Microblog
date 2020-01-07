@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style>
+
+	.profile_image{
+		width: 128px;
+		height: 128px;
+	}
+
+	.post_author_image{
+		width: 50px;
+		height: 50px;
+	}
+
+	.flex_box{
+		flex-basis: 25%;
+	}
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+	<div class="container">	
+		<img src="{{ current_image }}" class="profile_image" ><br><br>
+		<h1 id="username">{{ profile_user.username }}</h1>
+		
+		{% if profile_user.about_me %}
+			<p>About: {{ profile_user.about_me }}</p>
+		{% endif %}
+
+		{% if current_user.is_followed(profile_user) %}
+			<p>Last Seen: {{ profile_user.last_seen }}</p>
+		{% endif %}
+		
+		<div class="row">
+			{% if current_user==profile_user %}
+			<div class="col-md-4 col-sm-12">
+				<button  class="btn btn-secondary" >Followers {{ profile_user.followers.count() }}</button>
+			</div>
+			<div class="col-md-4 col-sm-12">
+				<button  class="btn btn-secondary" >Following {{ profile_user.followed.count() }}</button>
+			</div>
+			{% else %}
+			<div class="col-md-4 col-sm-12">
+				<button class="btn btn-secondary" id="followers">Followers {{ profile_user.followers.count() }}</button>
+			</div>
+			<div class="col-md-4 col-sm-12">
+				<button class="btn btn-secondary" id="following">Following {{ profile_user.followed.count() }}</button>
+			</div>
+			{% endif %}
+			
+			{% if current_user.username==profile_user.username %}
+				<div class="col-md-4 col-sm-12"><a id="edit" class="btn btn-info" href="{{ url_for('edit') }}">Edit Profile</a></div>
+			{% elif current_user.is_followed(profile_user) %}
+				<div class="col-md-4 col-sm-12"><button type="button" class="btn btn-info" id="unfollow" >Unfollow</button></div>
+			{% else %}
+				<div class="col-md-4 col-sm-12"><button type="button" class="btn btn-info" id="follow" >Follow</button></div>
+			{% endif %}
+		</div>
+	</div><hr>
+
+	<div class="container">
+		<table class="table table-striped">
+			<tbody id="post_tbody">
+			</tbody>
+		</table>
+		<div id="loader" style="margin:auto;width: 20%;">
+			<img src="{{ url_for('static', filename='loading.gif') }}">
+		</div>
+	</div>
+	<br><br>
+
+	{% if current_user==profile_user %}
+		<div class="modal" id="post_delete_confirmation_modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title">Delete Post</h1>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+
+					</div>
+
+					<div class="modal-body" id="post_delete_modal_body">
+						<span class="d-none"></span>
+						<p></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-info" id="delete_confirm">Yes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+{% endblock %}
+
+{% block js %}
+	<script>
+
+	$(document).ready(function(){
+
+		var load_index_post = function(from_where){
+			$.ajax({
+				type: "POST",
+				url: "/load_post_user",
+				data: { 
+						from_where: from_where,
+						user: $("#username").text() 
+				},
+				success: function(response){
+					var i;
+					if (response['stop']=="true"){
+						window.removeEventListener("scroll",scroll_complete_index_loader);
+					}
+					else{
+						var posts = [];
+						for(i=0; i<response["posts"].length; i++){
+							var tr = $("<tr></tr>");
+							$(tr).attr( 'id', response["posts"][i]['id'] );
+							var img = $("<img src='' class='post_author_image'>");
+							$(img).attr( 'src',response["posts"][i]['image'] );
+							var td1 = $("<td valigan='top'></td>").html(img);
+							var link = $( "<a href=''></a>" ).text( response["posts"][i]["author"] );
+							$(link).attr( 'href', response["posts"][i]['link'] );
+							var td2 = $( "<td style='float-left'></td>" ).html(link);
+							var td4 = $( "<td></td>" ).html( "<b>Posted On:</b><br>" + response["posts"][i]['timestamp'] );
+							$(tr).append(td1);
+							$(tr).append(td2);
+							$(link).after(" <b>says</b>:<br><p>"+response["posts"][i]['body']+"</p>");
+							$(tr).append(td4);
+							if ( $("#edit").length ){
+								var td5 = $( "<td><button type='button' class='btn text-danger post_delete_btn'><i class='fa fa-trash fa-2x' aria-hidden='true'></i></button></td>" );
+								$(tr).append(td5);
+							}
+							posts.push(tr);
+						}
+						setTimeout(function(){
+							$("#loader").hide();
+							$("#post_tbody").append(posts);
+						},1000);
+					}
+				}
+			});
+		};
+
+		scroll_complete_index_loader = function(){
+			var from_where = $("#post_tbody").children().last().attr('id');
+			if ( $(this).innerHeight() + $(this).scrollTop() >= $(document).height() ){
+				$("#loader").show();
+				load_index_post(from_where);
+			}
+		};
+
+		window.addEventListener("scroll",scroll_complete_index_loader);
+		if ( $("#unfollow").length || $("#edit").length ){
+			load_index_post(100000);
+		};	
+
+		if ( $("#edit").length ){
+			$(document).on('click',".post_delete_btn", function(){
+				$("#post_delete_confirmation_modal").modal('show');
+				$("#post_delete_modal_body").children("span").attr( 'value', $(this).parent().parent().attr('id') );
+				var post_body = $($(this).parent().parent().children()[1]).children("p").text()
+				$("#post_delete_modal_body").children("p").text( post_body );
+			});
+
+			$(document).on('click',"#delete_confirm", function(){
+				var id = $("#post_delete_modal_body").children("span").attr( 'value' )
+				$.ajax({
+					type: "POST",
+					url: "/delete_post",
+					data: { 'id': id },
+					success: function(response){
+						$("#post_delete_confirmation_modal").modal("hide");
+						$("#"+id).remove()
+					}
+				})
+			});
+		};
+
+		$(document).on('click',"#follow", function(){
+			username = $("#username").text();
+			console.log(username);
+			$.ajax({
+				type: "POST",
+				url: "/follow",
+				data: { 'user': username },
+				success: function(response){
+					var button = $("<button type='button' class='close' data-dismiss='alert'>&times;</button>");
+					var message = $("<b>"+response['text']+"</b>");
+					var alert = $("<div class='alert'></div>");
+					$(alert).addClass("alert-"+response['class']);
+					$(alert).append(button);
+					$(alert).append(message);
+					$("#alerts").empty()
+					$("#alerts").append(alert);
+					$("#follow").text('Unfollow');
+					$("#follow").attr('id','unfollow');
+					$("#followers").text( "Followers " + response['followers'] );
+					$("#following").text( "Following " + response['following'] );
+					load_index_post(100000);
+				}
+			});
+		});
+
+		$(document).on('click',"#unfollow", function(){
+			username = $("#username").text();
+			$.ajax({
+				type: "POST",
+				url: "/unfollow",
+				data: { 'user': username },
+				success: function(response){
+					var button = $("<button type='button' class='close' data-dismiss='alert'>&times;</button>");
+					var message = $("<b>"+response['text']+"</b>");
+					var alert = $("<div class='alert'></div>");
+					$(alert).addClass("alert-"+response['class']);
+					$(alert).append(button);
+					$(alert).append(message);
+					$("#alerts").empty()
+					$("#alerts").append(alert);
+					$("#unfollow").text('Follow');
+					$("#unfollow").attr('id','follow');
+					$("#followers").text( "Followers " + response['followers'] );
+					$("#following").text( "Following " + response['following'] );
+					$("#post_tbody").empty();
+				}
+			});
+		});
+
+
+	});
+
+</script>
+{% endblock %}

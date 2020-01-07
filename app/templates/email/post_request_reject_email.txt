@@ -1,0 +1,6 @@
+Dear {{ user.username }}
+
+Your Post request for post "{{ post.body }}" requested on {{ post.timestamp }}  has been rejected by our admin
+
+Microblog Team
+

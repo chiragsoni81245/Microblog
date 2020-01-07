@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{% if title %}
+		<title>{{ title }} -Microblog</title>
+	{% else %}
+		<title>Microblog</title>
+	{% endif %}
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://use.fontawesome.com/ef92ad5cac.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Solway&display=swap" rel="stylesheet">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<link rel="stylesheet" href="{{ url_for('static',filename='croppie.css') }} " />
+	<script src="{{ url_for('static',filename='croppie.js') }} "></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+
+</head> 
+
+<style>
+	div.nav a{
+		text-decoration: none;
+	}
+	table.search_result_list{
+		display: none;
+		position: absolute;
+		top: 100%;
+		background-color: white;
+		width:16em;
+		border: 2px solid grey;
+		padding: 0;
+	}
+	table.search_result_list tr{
+		width:100%;
+		padding-left: 3em;
+	}
+	table.search_result_list tr:hover{
+		background-color: rgba(0,0,0,0.2);
+
+	}
+	table.search_result_list tr>td>a{
+		text-decoration: none;
+		padding: 2em 3em
+		width: 100%
+	}
+	.search_result_image{
+		width: 2em;
+		height: 2em;
+	}
+</style>
+
+{% block css %}
+{% endblock %}
+
+<body>
+	<nav class="navbar navbar-expand-md sticky-top navbar-dark bg-dark" style="width: 100%;">
+
+		<button class="navbar-toggler navbar-toggler-right" data-toggle="collapse" data-target="#collapse-target">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		
+		<div class="justify-content-center collapse navbar-collapse " id="collapse-target"> 
+			
+			<a class="navbar-brand"><img src="{{ url_for('static', filename='blog_icon.png') }}"></a>
+			<span class="navbar-text text-white">Microblog</span>
+			{% if current_user.is_authenticated %}
+				<form action="/search" method="POST" id="form3" style="margin-top: 0.6em;margin-left: 0.5em" class="form-inline">
+					<input id="search_input" type="text" name="search" class="form-control form-control-sm" placeholder="Search.." style="width:80%">
+					<table id="search_result_list" class="search_result_list table" >
+					</table>
+					<button type="submit" class="btn btn-info btn-sm"  form="form3"><i class="fa fa-search" aria-hidden="true"></i></button>
+				</form>
+			{% endif %}
+
+			<ul class="navbar-nav">
+				{% if current_user.is_authenticated and current_user.permissions() %}	
+					<li class="nav-item">
+						<a class="nav-link text-light" href="/admin">Admin</a>
+					</li>
+				{% endif %}
+				<li class="nav-item">
+					<a class="nav-link text-light" href="{{ url_for('index') }}">Home</a>
+				</li>
+				{% if current_user.is_authenticated %}
+					<li class="nav-item">
+						<a class="nav-link text-light" href="{{ url_for('explore') }}">Explore</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link text-light" href="{{ url_for('logout') }}">Logout</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link text-light" href="{{ url_for('user',username=current_user.username) }}">Profile</a>
+					</li>
+				{% else %}
+					<li class="nav-item">
+						<a class="nav-link text-light" href="{{ url_for('login') }}">Login</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link text-light" href="{{ url_for('register') }}">Register</a>
+					</li>
+				{% endif %}
+			</ul>
+
+		</div>
+	
+	</nav>
+	<br><br><br>
+	
+	<div class="container">
+		<div id='alerts'>
+			{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %} 
+				{% for category,message in messages %}
+					<div class="alert alert-{{ category }} alert-dismissible">
+						<button type="button" class="close" data-dismiss='alert'>&times;</button>
+						<Strong>{{ message }}</Strong>
+					</div>
+				{% endfor %}
+			{% endif %}
+			{% endwith %}
+			{% if current_user.is_authenticated and current_user.email_verified==False and request.path!="/email_verification" %}
+				<div class="alert alert-warning alert-dismissible">
+					<button type="button" class="close" data-dismiss='alert'>&times;</button>
+					<strong>
+						Please Varify Your Email    
+						<a style="text-decoration: none" href="{{ url_for('email_verification_request') }}">  Click here to Varify</a>
+					</strong>
+				</div>
+			{% endif %}
+		</div>
+
+		<div style="display: flex;align-items: flex-start;justify-content: center;width: 100%">	
+			<!-- <div class="col-md-2 overflow-hidden" style="margin-top:20em ;position: sticky;top:5em;">
+				<img src="{{ url_for('static', filename='goku.png') }}" class="img-fluid">	
+			</div> -->
+			<div class="col-md-12" >
+				{% block content %} {% endblock %}
+			</div>
+<!-- 			<div class="col-md-2 overflow-hidden" style="margin-top:20em ;position: sticky;top:5em;">
+				<img src="{{ url_for('static', filename='goku.png') }}" class="img-fluid">
+			</div> -->
+		</div>
+
+
+		<span class="d-none" id="username">{{ current_user.username }}</span>
+	</div>
+
+	<script type="text/javascript">
+
+		$(document).ready(function(){
+			$(document).on("click","#search_input",function(){
+				$("#search_result_list").show();
+			});
+
+			$(document).on("focusout","#search_input",function(){
+				setTimeout(function(){
+					var focus = $(document.activeElement);
+					if (focus.is("#search_input") || $("#search_result_list").find("*").has(focus).length ){
+						console.log("still focused")
+					}
+					else{
+						$("#search_result_list").hide();
+					}
+				},0);
+			});
+			
+			$(document).on("keyup","#search_input",function(){
+				//Ajax to take search result from database
+				$.ajax({
+					type: "POST",
+					url: "{{ url_for('search_result') }}",
+					data: { search_text: $(this).val() },
+					success: function(response){
+						var i;
+						$("#search_result_list").empty();
+						for(i=0;i<response['search_result'].length;i++){
+							var tr = $("<tr></tr>");
+							var td1= $("<td class='search_list_element'></td>").html("<a href='#'></a>");
+							$(td1).children().attr('href',response['search_result'][i]['profile_link']);
+							$(td1).children().text(response['search_result'][i]['username']);
+							var td2 = $("<td valigan='top'></td>").html("<img src='' class='search_result_image'>");
+							$(td2).children().attr( 'src',response['search_result'][i]['image'] )
+							$(tr).append(td2);
+							$(tr).append(td1);
+							$("#search_result_list").append(tr);
+						}
+					}
+				});
+			});
+
+			var socket = io.connect("http://127.0.0.1:5000")
+
+			var socket_notify = io.connect("http://127.0.0.1:5000/notify")
+
+			socket.on('connect',function(){
+				var username = $("#username").text()
+				socket.send( "User is Connected" );
+			});
+
+			socket_notify.on('from_flask', function(response){
+				console.log(response);
+				var button = $("<button type='button' class='close' data-dismiss='alert'>&times;</button>");
+				var message = $("<b>"+response['text']+"</b>");
+				var alert = $("<div class='alert'></div>");
+				$(alert).addClass("alert-"+response['class']);
+				$(alert).append(button);
+				$(alert).append(message);
+				$("#alerts").empty();
+				$("#alerts").append(alert);
+			});
+
+		});
+		
+	</script>
+
+{% block js %}
+
+{% endblock %}
+
+</body>
+</html>

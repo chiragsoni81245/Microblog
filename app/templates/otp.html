@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<div class="conatiner col-md-6 offset-md-4">
+		<form action="" method="POST">
+			{{ form.hidden_tag() }}
+			<div class="form-group">
+				{{ form.otp.label(class='offset-md-2') }}
+				{{ form.otp(class="form-control w-50") }}
+			</div>
+			{{ form.submit(class="btn btn-info offset-md-2") }}
+		</form>
+	</div>
+{% endblock %}

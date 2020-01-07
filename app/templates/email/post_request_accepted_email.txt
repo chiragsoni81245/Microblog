@@ -1,0 +1,5 @@
+Dear {{ user.username }}
+
+your post request for post "{{ post.body }}" submited on {{ post.timestamp }} has been accepted
+
+Microblog Team

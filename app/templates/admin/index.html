@@ -1,0 +1,11 @@
+{% extends "admin/master.html" %}
+
+{% block head_css %}
+	{{ super() }}
+
+{% endblock %}
+
+
+{% block body %}
+	<a href="{{ url_for('index') }}" class="btn btn-info">Back To App</a>
+{% endblock %}

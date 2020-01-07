@@ -1,0 +1,5 @@
+Dear {{ user.username }}
+
+OTP: {{ otp }}
+
+The Microblog Team

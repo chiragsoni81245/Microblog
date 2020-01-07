@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style>
+
+	.post_author_image{
+		width:50px;
+		height: 50px;
+	}
+
+	.post_form{
+		display: flex;
+		flex-direction: column;
+		position: sticky;
+		top:6em;
+		background-color: #fff;
+		padding:1.4em;
+		border-radius: 0.6em;
+		box-shadow: 0px 0px 5px 0px #000;
+	}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+	<div class="post_form">
+		<h1 >Hi, {{ current_user.username }}</h1>
+		<textarea id="post_body" class="form-control" placeholder="Write here somthing...." style="height: 5em;"></textarea><br>
+		<button type="button" id="post_submit" class="offset-md-10 col-md-2 btn btn-success">Submit</button>
+	</div>
+	<br><br>
+	<table class="table table-striped overflow-scroll">
+		<tbody id="post_tbody">
+		</tbody>
+	</table>
+	<div id="loader" style="margin:auto;width: 20%;">
+		<img src="{{ url_for('static', filename='loading.gif') }}">
+	</div>
+		
+{% endblock %}
+
+{% block js %}
+<script>
+
+	$(document).ready(function(){
+
+		var load_index_post = function(from_where){
+			$.ajax({
+				type: "POST",
+				url: "/load_post_index",
+				data: { from_where: from_where },
+				success: function(response){
+					var i;
+					if (response['stop']=="true"){
+						window.removeEventListener("scroll",scroll_complete_index_loader);
+						$("#loader").hide()
+					}
+					else{
+						var posts = [];
+						for(i=0; i<response["posts"].length; i++){
+							var tr = $("<tr></tr>");
+							$(tr).attr( 'id', response["posts"][i]['id'] );
+							var img = $("<img src='' class='post_author_image'>");
+							$(img).attr( 'src',response["posts"][i]['image'] );
+							var td1 = $("<td valigan='top'></td>").html(img);
+							var link = $( "<a href=''></a>" ).text( response["posts"][i]["author"] );
+							$(link).attr( 'href', response["posts"][i]['link'] );
+							var td2 = $( "<td style='float-left'></td>" ).html(link);
+							var td4 = $( "<td></td>" ).html( "<b>Posted On:</b><br>" + response["posts"][i]['timestamp'] );
+							$(tr).append(td1);
+							$(tr).append(td2);
+							$(link).after(" <b>says</b>:<br>"+response["posts"][i]['body']);
+							$(tr).append(td4);
+							posts.push(tr)
+						}
+						setTimeout(function(){
+								$("#loader").hide();
+								$("#post_tbody").append(posts);
+							},1000);
+					}
+				}
+			});
+		};
+
+		scroll_complete_index_loader = function(){
+			var from_where = $("#post_tbody").children().last().attr('id');
+			if ( $(this).innerHeight() + $(this).scrollTop() >= $(document).height() ){
+				$("#loader").show();
+				load_index_post(from_where);
+			}
+		};
+
+
+		$(document).on('click', "#post_submit", function(){
+			if( $("#post_body").val()!=="" ){
+				post_data = $("#post_body").val(); 
+				$.ajax({
+					type: "POST",
+					url: '/post_submit',
+					data: {'body': post_data},
+					success: function(response){
+						var button = $("<button type='button' class='close' data-dismiss='alert'>&times;</button>");
+						var message = $("<b>"+response['text']+"</b>");
+						var alert = $("<div class='alert'></div>");
+						$(alert).addClass("alert-"+response['class']);
+						$(alert).append(button);
+						$(alert).append(message);
+						$("#alerts").append(alert);
+						$("#post_body").val('');
+					}
+				});
+			};
+		});
+
+		window.addEventListener("scroll",scroll_complete_index_loader);
+		
+		load_index_post(100000);
+		
+	});
+
+</script>
+{% endblock %}

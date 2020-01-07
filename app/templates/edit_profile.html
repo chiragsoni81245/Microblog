@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style type="text/css">
+.image{
+	display: block;
+	width:7em;
+	height: 7em;
+}
+	.label{
+font-size:25px;
+}
+
+.image_btn {
+	width:7em;
+	height:7em;
+	border:none;
+} 
+
+.overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 7em;
+  width: 7em;
+  opacity: 0;
+  transition: .5s ease;
+}
+
+.pp:hover .overlay {
+  opacity: 0.6;
+}
+
+.pp {
+	position:relative;
+	width:7em;
+	height:7em;
+}
+
+.image_gallery{
+	float:left;
+	border-radius: 10px;
+	width:7em;
+	height: 7em;
+}
+
+.upload_btn{
+	overflow: hidden;
+	width: 7em;
+	height: 7em;
+	padding: 1em;
+	opacity: 0;
+	position: absolute;
+	top: 0.25em;
+	left: 0.25em;
+}
+
+.upload_btn_show{
+	position: relative;
+	overflow: hidden;
+  	display: inline-block;
+}
+
+.btn1{
+	width: 127px;
+	height: 127px;
+	border: 1px solid gray;
+	color: gray;
+	background-color: white;
+	padding: 8px 20px;
+	border-radius: 10px;
+	font-size: 20px;
+	font-weight: bold;
+}
+.container_form{
+	background-color: #fff;
+	border-radius: 1em;
+	padding:1em;
+	box-shadow: 0px 0px 10px 0px #000;
+}
+
+
+</style>
+{% endblock %}
+
+{% block content %}
+	<div class="container container_form" style="width:60%;">
+		<form id="form1" action="" method="POST">
+			{{ form.hidden_tag() }}
+				<div class="pp">
+					<h1 class="d-none" id="base_url_for_user_image">{{ url_for('static', filename="profile_pic/{}/".format(user.username)) }}</h1>
+					<h1 class="d-none" id="url_for_default_image">{{ url_for('static', filename="profile_pic/default.jpg") }}</h1>
+					<img src='{{ image }}' id="edit_profile_image" class="rounded image">
+					<div class="overlay">
+						<a type="button" class="btn image_btn" data-toggle="modal" data-target="#myModal">
+							<i class="fa fa-pencil-square-o fa-2x" aria-hidden="true"></i></a>
+					</div>
+				</div><br><br>
+				
+				<div class="form-group">
+					{{ form.email.label(class="label") }}
+					{{ form.email( class="form-control form-control-inline w-80" ) }}
+					{% for error in form.email.errors %}
+					<span style="color:red">{{ error }}</span><br>
+					{% endfor %}
+				</div>
+				<div class="form-group">
+					{{ form.about_me.label(class="label") }}
+					{{ form.about_me( class="form-control form-control-inline w-80" ) }}
+					{% for error in form.about_me.errors %}
+					<span style="color:red">{{ error }}</span><br>
+					{% endfor %}
+				</div>
+				{{ form.submit( class="btn btn-info btn-sm", id="form_submit", form="form1") }}
+				<button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#confirm_modal">Delete Account</button>
+				<a class="btn btn-secondary btn-sm" href="{{ url_for('index') }}">Cancel</a>
+		</form>
+	</div>
+
+		<div class="modal" id="confirm_modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Confirmation</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						You Want to delete Your Account?
+					</div>
+					<div class="modal-footer">
+						<a type="button" class="btn btn-danger" href="{{ url_for('delete_account',username=current_user.username) }}">Yes</a>
+						<button type="button" class="btn btn-info" data-dismiss="modal">No</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+		<div class="modal" id="myModal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Profile Image</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+
+					<div class="modal-body" id="images_modal_body" style="overflow-y:scroll;height:400px;">
+						
+						<input type="text" id="selected_image" class="d-none" value="{{ user.current_image }}">
+						<input type="file" name="image_file" id="image_field"><br><br>
+						
+						<span value="default.jpg" class="images image_gallery">
+							<img src="{{ url_for('static', filename='profile_pic/default.jpg' ) }}" class="image_gallery">
+						</span> 
+						{% if user.images.all() %}
+							{% for img in user.images.all() %}
+								<span value="{{ img.image }}" class="images image_gallery">
+									<img src="{{ url_for('static', filename='profile_pic/{}/{}'.format(user.username,img.image) ) }}" class="image_gallery">
+								</span>
+							{% endfor %}
+						{% endif %}
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-info" id="apply_image">Apply</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="modal" id="crop_modal" role="dialog">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Crop Image</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+
+					<div class="modal-body">
+						<div class="offset-md-4">
+							<div id="crop_image_demo" style="width:300px;overflow: hidden;"></div>
+						</div>
+					</div>
+
+					<div class="modal-footer">
+						<button type="button" class="btn btn-info" id="crop">Crop</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+{% endblock %}
+
+{% block js %}
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+			$(document).on("click",".images",function(){
+				var x = $(this).attr("value");
+				$(".images").children().css("border","none");
+				($(this).children()).css("border","3px solid blue");
+				var x = $(this).attr('value'); 
+				$("#selected_image").val(x)
+			});
+
+
+			$(document).on("click","#image_field",function(){
+				$(".images").children().css("border","none")
+			});
+			
+
+			var image_crop = $("#crop_image_demo").croppie({
+				enableExif:true, 	
+				viewport: {
+					width:200,
+					height:200,
+					type: 'square'
+				},
+				boundary: {
+					width:400,
+					height:300
+				}
+			});
+
+			$(document).on("change","#image_field",function(){
+				var reader = new FileReader()
+				reader.onload = function(event){
+					image_crop.croppie('bind',{
+						url: event.target.result,
+					});
+				};
+				reader.readAsDataURL( this.files[0] );
+				$("#crop_modal").modal('show');
+			});
+
+			$(document).on("click","#crop",function(event){
+				image_crop.croppie("result",{
+					type: 'canvas',
+					size: 'viewport'
+				}).then(function(response){
+					// console.log(response)
+					// here i have to write ajax to save this image on server
+					$.ajax({
+						type: "POST",
+						url :"/upload_image",
+						data: { image : response },
+						success: function(response){
+							
+							$("#image_field").val('')
+							var number_prev_images = $(".images").length -1
+							// Ajax to load images to modal  							
+							$.ajax({
+								type:"POST",
+								url: "/load_profile_images",
+								data: {	prev_images: number_prev_images },
+								success: function(response){
+									var i;
+									for( i=0 ; i<response['images'].length;i++){
+										var span_image;
+										span_image = $("<span class='images image_gallery'></span>").html("<img src=\"\" class='image_gallery'>")
+										var url = response['images'][i][1]
+										$(span_image).attr('value',response['images'][i][0]);
+										$(span_image).children().attr('src',url) ;
+										$("#images_modal_body").append(span_image);
+									}
+								}
+							});
+							$("#crop_modal").modal('hide');
+						}
+					});
+				});
+			});
+
+			$(document).on('click',"#apply_image", function(){
+				var image = $("#selected_image").val();
+				$.ajax({
+					type: "POST",
+					url: "/profile_image_update",
+					data: { 'selected_image': image },
+					success: function(response){
+						var button = $("<button type='button' class='close' data-dismiss='alert'>&times;</button>");
+						var message = $("<b>"+response['text']+"</b>");
+						var alert = $("<div class='alert'></div>");
+						$(alert).addClass("alert-"+response['class']);
+						$(alert).append(button);
+						$(alert).append(message);
+						$("#alerts").empty()
+						$("#alerts").append(alert);
+						$("#myModal").modal('hide');
+						var image_val = $("#selected_image").val();
+
+						if  (image_val!=="default.jpg"){
+							$("#edit_profile_image").attr( 'src', $("#base_url_for_user_image").text() + image_val );
+						}
+						else{
+							$("#edit_profile_image").attr( 'src', $('#url_for_default_image').text() );
+						}
+					}  
+				});
+			});
+		});
+	</script>
+{% endblock %}

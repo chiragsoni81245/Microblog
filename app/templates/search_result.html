@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style>
+
+	.image{
+	width:100px;
+	height: 100px;
+}
+	.text{
+		font-size: 30px;
+		text-decoration: none;
+		float:left;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+	<table class="table table-hover">
+		<tbody>
+			{% if results %}
+				{% for i in results %}
+					<tr>
+						<td valign="top" class="image">
+							{% if current_image=="default" %}
+								<img src="{{ url_for('static',filename='profile_pic/{}/{}.jpg'.format(i.username,i.current_image)) }}" class="image">
+							{% else %}
+								<img src="{{ url_for('static',filename='profile_pic/default.jpg') }}" class="image">
+							{% endif %}
+						</td>
+						<td><a href="{{ url_for('user',username=i.username) }}" class="text">{{ i.username }}</a></td>
+					</tr>
+				{% endfor %}
+			{% else %}
+				<h1>No result found</h1>
+			{% endif %}
+		</tbody>
+	</table>
+{% endblock %}

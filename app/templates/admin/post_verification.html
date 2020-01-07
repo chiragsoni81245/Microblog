@@ -1,0 +1,91 @@
+{% extends "admin/master.html" %}
+
+{% block head_css %}
+	{{ super() }}
+	<script src="https://use.fontawesome.com/ef92ad5cac.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<style>
+		.table_data{
+			text-align: center;
+			font-size: 20px;
+			padding: 5px;
+		}
+		.table_h{
+			text-align: center;
+			font-size: 20px;
+			padding: 10px;
+		}
+		.thead1{
+			background-color: rgba(0,0,0,0.2);
+		}
+		table{
+			width: 100%;
+		}
+	</style>
+{% endblock %}
+
+
+{% block body %}
+	<div class="container">
+		<div class="table-responsive">
+			<table class="table-bordered table-hover">
+				<thead class="thead1">
+					<tr>
+						<th class="table_h">id</th>
+						<th class="table_h">Body</th>
+						<th class="table_h">Time</th>
+						<th class="table_h">Author</th>
+						<th class="table_h"></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for post in PostVerification.query.all() %}
+						<tr>
+							<td id="post_id" style="display:none;">{{ post.id }}</td>
+							<td class="table_data">{{ post.id }}</td>
+							<td class="table_data">{{ post.body }}</td>
+							<td class="table_data">{{ post.timestamp }}</td>
+							<td class="table_data">{{ post.author }}</td>
+							<td class="table_data"> 
+								<button type="button" class="post_request_varified btn btn-info" ><i class="fa fa-check-square-o" aria-hidden="true"></i></button>
+								<button type="button" class="post_request_deleted btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<script>
+	$(document).ready(function(){
+		
+		$(document).on("click",".post_request_varified",function(){
+			var id = $($(this).parent().parent()).children()[0].innerHTML
+			console.log(id)
+			$.post("/post_request_verified",{
+				id:  id
+			}).done(function(response){
+				console.log(response['message']);
+			});	
+			$(this).parent().parent().remove();
+		});
+
+		$(document).on("click",".post_request_deleted",function(){
+			var id = $($(this).parent().parent()).children()[0].innerHTML
+			console.log(id)
+			$.post("/post_request_deleted",{
+				id:  id
+			}).done(function(response){
+				console.log(response['message']);
+			});
+			$(this).parent().parent().remove();
+		});
+
+	});
+	
+</script>
+{% endblock %}
+
+
