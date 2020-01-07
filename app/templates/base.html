@@ -191,9 +191,15 @@
 				});
 			});
 
+<<<<<<< HEAD
 			var socket = io.connect("https://192.168.33.10")
 
 			var socket_notify = io.connect("https://192.168.33.10/notify")
+=======
+			var socket = io.connect("http://192.168.33.10")
+
+			var socket_notify = io.connect("http://192.168.33.10/notify")
+>>>>>>> 202955b67f8e0878113aabdb04ef984437e5517f
 
 			socket.on('connect',function(){
 				var username = $("#username").text()
