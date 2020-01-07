@@ -1,6 +1,5 @@
 __pycache__
 app/__pycache__
-app/static
 logs
 migrations
 .vagrant
