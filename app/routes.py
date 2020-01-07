@@ -216,7 +216,7 @@ def email_verificaion():
 @app.route("/search", methods=["POST","GET"])
 def search():
 	search_text = request.form['search']
-	results = User.query.filter(User.username.like(f"%{search_text}%")).all()
+	results = User.query.filter(User.username.like("%{}%".format(search_text))).all()
 	return render_template('search_result.html',results=results)
 
 
@@ -289,7 +289,7 @@ def load_profile_images():
 def search_result():
 	search_text = request.form['search_text']
 	if search_text!="":
-		result = User.query.filter( User.username.op("regexp")(f'.*{search_text}.*') ).all()
+		result = User.query.filter( User.username.op("regexp")('.*{}.*'.format(search_text)) ).all()
 	else:
 		result = []
 	sorted_users = [(i,len(i.followers.all())) for i in result ]
