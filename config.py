@@ -12,7 +12,7 @@ class Config(object):
 
 	# SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, "app.db")
 	
-	SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://admin:9466201496aA@@localhost:3306/microblog1' 
+	SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://admin:9466201496aA@@localhost:3306/microblog' 
 
 	SQLALCHEMY_TRACK_MODIFICATIONS = False
 
