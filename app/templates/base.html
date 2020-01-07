@@ -191,26 +191,26 @@
 				});
 			});
 
-			var socket = io.connect("https://192.168.33.10")
+			// var socket = io.connect("http://127.0.0.1:8000")
 
-			var socket_notify = io.connect("https://192.168.33.10/notify")
+			// var socket_notify = io.connect("http://127.0.0.1:8000/notify")
 
-			socket.on('connect',function(){
-				var username = $("#username").text()
-				socket.send( "User is Connected" );
-			});
+			// socket.on('connect',function(){
+			// 	var username = $("#username").text()
+			// 	socket.send( "User is Connected" );
+			// });
 
-			socket_notify.on('from_flask', function(response){
-				console.log(response);
-				var button = $("<button type='button' class='close' data-dismiss='alert'>&times;</button>");
-				var message = $("<b>"+response['text']+"</b>");
-				var alert = $("<div class='alert'></div>");
-				$(alert).addClass("alert-"+response['class']);
-				$(alert).append(button);
-				$(alert).append(message);
-				$("#alerts").empty();
-				$("#alerts").append(alert);
-			});
+			// socket_notify.on('from_flask', function(response){
+			// 	console.log(response);
+			// 	var button = $("<button type='button' class='close' data-dismiss='alert'>&times;</button>");
+			// 	var message = $("<b>"+response['text']+"</b>");
+			// 	var alert = $("<div class='alert'></div>");
+			// 	$(alert).addClass("alert-"+response['class']);
+			// 	$(alert).append(button);
+			// 	$(alert).append(message);
+			// 	$("#alerts").empty();
+			// 	$("#alerts").append(alert);
+			// });
 
 		});
 		

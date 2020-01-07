@@ -18,12 +18,12 @@ from app import socketio, send, emit
 
 users_sid = {}
 
-@socketio.on("message")
-@login_required
-def messageHandler(message):
-	users_sid[ current_user.username ] = request.sid
-	print("Message: "+message)
-	print(users_sid)
+# @socketio.on("message")
+# @login_required
+# def messageHandler(message):
+# 	users_sid[ current_user.username ] = request.sid
+# 	print("Message: "+message)
+# 	print(users_sid)
 
 def convert_save_image(filedata,filename):
 	path = os.path.join(app.root_path+"/static/profile_pic/{}/{}".format(current_user.username,filename+".png") )
@@ -316,9 +316,9 @@ def search_result():
 @app.route("/load_post_user", methods=["POST"])
 def load_post():
 	from_where = int(request.form['from_where'])
-	if (request.url=="https://192.168.33.10/load_post_index"):
+	if (request.url=="http://127.0.0.1:8000/load_post_index"):
 		result = current_user.followed_posts().filter(Post.id<from_where).limit(15).all()
-	elif (request.url=="https://192.168.33.10/load_post_explore"):
+	elif (request.url=="http://127.0.0.1:8000/load_post_explore"):
 		result = Post.query.order_by(Post.timestamp.desc()).filter(Post.id<from_where).limit(15).all()
 	else:
 		user = User.query.filter_by( username=request.form['user'] ).first()
@@ -388,7 +388,7 @@ def follow():
 		sid = users_sid[user.username]
 	except :
 		sid = ''
-	socketio.emit('from_flask',{'text': "{} start following you".format(current_user.username), 'class': 'info'}, room=sid, namespace="/notify")
+	# socketio.emit('from_flask',{'text': "{} start following you".format(current_user.username), 'class': 'info'}, room=sid, namespace="/notify")
 	result = { 
 				'text': "Now you following {}".format(user.username), 
 				'class': "success", 
@@ -413,7 +413,7 @@ def unfollow():
 		sid = users_sid[user.username]
 	except :
 		sid = ''
-	socketio.emit('from_flask',{'text': "{} unfollowed you".format(current_user.username), 'class': 'info'}, room=sid, namespace="/notify")
+	# socketio.emit('from_flask',{'text': "{} unfollowed you".format(current_user.username), 'class': 'info'}, room=sid, namespace="/notify")
 	result = { 
 				'text': "You unfollow {}".format(user.username), 
 				'class': "success",
