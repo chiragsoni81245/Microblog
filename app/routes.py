@@ -315,9 +315,6 @@ def search_result():
 @app.route("/load_post_explore", methods=["POST"])
 @app.route("/load_post_user", methods=["POST"])
 def load_post():
-	
-	with open("clog.txt","a") as f:
-		f.write(request.url)
 
 	from_where = int(request.form['from_where'])
 	if (request.url=="http://192.168.33.10/load_post_index"):
