@@ -48,7 +48,11 @@ class User(UserMixin,db.Model):
 		secondaryjoin=(followers.c.followed_username == username),
 		backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
-
+        def get_id(self):
+            try:
+                return self.username
+            except AttributeError:
+                raise NotImplementedError('No `id` attribute - override `get_id`')
 
 	def get_reset_password_token(self, expire_in=600):
 		return jwt.encode( {'reset_password': self.username, 'exp': time()+ expire_in}, app.config['SECRET_KEY'], algorithm='HS256' ).decode('utf-8')
