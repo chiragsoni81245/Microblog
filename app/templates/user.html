@@ -112,6 +112,7 @@
 					var i;
 					if (response['stop']=="true"){
 						window.removeEventListener("scroll",scroll_complete_index_loader);
+						$("#loader").hide();
 					}
 					else{
 						var posts = [];

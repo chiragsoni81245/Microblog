@@ -315,14 +315,19 @@ def search_result():
 @app.route("/load_post_explore", methods=["POST"])
 @app.route("/load_post_user", methods=["POST"])
 def load_post():
+	
+	with open("clog.txt","a") as f:
+		f.write(request.url)
+
 	from_where = int(request.form['from_where'])
-	if (request.url=="http://127.0.0.1:8000/load_post_index"):
+	if (request.url=="http://192.168.33.10/load_post_index"):
 		result = current_user.followed_posts().filter(Post.id<from_where).limit(15).all()
-	elif (request.url=="http://127.0.0.1:8000/load_post_explore"):
+	elif (request.url=="http://192.168.33.10/load_post_explore"):
 		result = Post.query.order_by(Post.timestamp.desc()).filter(Post.id<from_where).limit(15).all()
 	else:
 		user = User.query.filter_by( username=request.form['user'] ).first()
 		result = user.posts.order_by(Post.timestamp.desc()).filter(Post.id<from_where).limit(15).all()
+	
 	final_result = [] 
 	for i in result:
 		if i.author.current_image=="default.jpg":
