@@ -144,7 +144,7 @@
 				}
 			});
 		};
-
+		load_index_post()
 		scroll_complete_index_loader = function(){
 			var from_where = $("#post_tbody").children().last().attr('id');
 			if ( $(this).innerHeight() + $(this).scrollTop() >= $(document).height() ){
@@ -228,7 +228,6 @@
 				}
 			});
 		});
-
 
 	});
 

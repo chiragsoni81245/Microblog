@@ -133,7 +133,7 @@ def register():
 		db.session.add(u)
 		db.session.commit()
 		flash("Congratulations you are now a registered user!!",'success')
-		os.system("mkdir app/static/profile_pic/{}".format(form.username.data)) 
+		os.system("mkdir -p app/static/profile_pic/{}".format(form.username.data)) 
 		return redirect(url_for('login'))
 	return render_template("register.html",title="Register",form=form)
 
@@ -315,16 +315,15 @@ def search_result():
 @app.route("/load_post_explore", methods=["POST"])
 @app.route("/load_post_user", methods=["POST"])
 def load_post():
-
 	from_where = int(request.form['from_where'])
-	if (request.url=="http://192.168.33.10/load_post_index"):
+	if (request.path=="/load_post_index"):
 		result = current_user.followed_posts().filter(Post.id<from_where).limit(15).all()
-	elif (request.url=="http://192.168.33.10/load_post_explore"):
+	elif (request.path=="/load_post_explore"):
 		result = Post.query.order_by(Post.timestamp.desc()).filter(Post.id<from_where).limit(15).all()
 	else:
 		user = User.query.filter_by( username=request.form['user'] ).first()
 		result = user.posts.order_by(Post.timestamp.desc()).filter(Post.id<from_where).limit(15).all()
-	
+		
 	final_result = [] 
 	for i in result:
 		if i.author.current_image=="default.jpg":

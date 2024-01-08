@@ -10,10 +10,6 @@ from pyotp import TOTP
 import base64 
 import os
 
-
-
-
-
 followers = db.Table('followers',
 	db.Column('follower_username',db.ForeignKey('user.username')),
 	db.Column('followed_username',db.ForeignKey('user.username'))
@@ -149,8 +145,8 @@ class ProfileImage(db.Model):
 	image = db.Column( db.String(100) )
 
 @login.user_loader
-def load_user(username):
-	return	User.query.filter_by(username=username).first()
+def load_user(id):
+	return	User.query.filter_by(id=id).first()
 
 
 # ............................Marshmallow Schemas............................................
